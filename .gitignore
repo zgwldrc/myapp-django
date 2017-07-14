@@ -1,0 +1,8 @@
+# IDEs and editors
+/.idea
+
+*__pycache__*
+
+# System Files
+.DS_Store
+Thumbs.db
