@@ -19,7 +19,6 @@ from app import views
 
 urlpatterns = [
     # url(r'^admin/', admin.site.urls),
-    url(r'^api/account/$', views.AccountList.as_view()),
-    url(r'^api/account/(?P<pk>\d+)/$', views.AccountDetail.as_view()),
-    url(r'^api/account/count/$', views.account_count),
+    url(r'^api/account/(?:(?P<pk>\d+)/)?$', views.AccountView.as_view()),
+    url(r'^api/account/count/?$', views.account_count),
 ]

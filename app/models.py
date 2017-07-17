@@ -22,7 +22,7 @@ class Account(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True, db_index=True)
 
     type = models.ForeignKey(AccountType)
-    user = models.ForeignKey(auth_models.User)
+    owner = models.ForeignKey(auth_models.User, db_column='user_id', default=1)
 
     class Meta:
         ordering = ['-created_at']

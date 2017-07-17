@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             name='AccountType',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(max_length=50)),
+                ('type', models.CharField(max_length=50, unique=True)),
             ],
         ),
         migrations.AddField(
@@ -40,7 +40,18 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='account',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            name='owner',
+            field=models.ForeignKey(db_column='user_id', default=1, on_delete=django.db.models.deletion.CASCADE,
+                                    to=settings.AUTH_USER_MODEL),
         ),
+        migrations.AddField(
+            model_name='account',
+            name='created_at',
+            field=models.DateTimeField(db_index=True, default=django.utils.timezone.now),
+        ),
+        migrations.AddField(
+            model_name='account',
+            name='updated_at',
+            field=models.DateTimeField(auto_now=True, null=True, db_index=True),
+        )
     ]
