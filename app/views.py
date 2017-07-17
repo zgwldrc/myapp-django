@@ -16,7 +16,7 @@ class AccountList(View):
     @staticmethod
     def get(request):
         max_page_size = 100
-        min_page_size = 5
+        min_page_size = 1
 
         input_page_size = request.GET.get('page_size')
         if input_page_size is not None:
@@ -24,7 +24,7 @@ class AccountList(View):
             page_size = min(page_size, max_page_size)
             page_size = max(page_size, min_page_size)
         else:
-            page_size = 25
+            page_size = 10
 
         input_page_num = request.GET.get('page')
         if input_page_num is not None:
@@ -32,7 +32,7 @@ class AccountList(View):
         else:
             page_num = 1
 
-        paginator = Paginator(Account.objects.all(), page_size)
+        paginator = Paginator(Account.objects.all().order_by('id'), page_size)
         try:
             accounts = paginator.page(page_num)
         except PageNotAnInteger:
@@ -43,7 +43,17 @@ class AccountList(View):
             accounts = paginator.page(paginator.num_pages)
 
         response = HttpResponse(content_type='application/json')
-        response.write(serialize('json', accounts))
+        response.write(serialize('json', accounts, use_natural_foreign_keys=True, indent=2))
         return response
+
+
+class AccountDetail(View):
+
+    @staticmethod
+    def get(request, pk):
+        response = HttpResponse(content_type='application/json')
+        response.write(serialize('json', Account.objects.filter(pk=pk), use_natural_foreign_keys=True, indent=2))
+        return response
+
 
 
