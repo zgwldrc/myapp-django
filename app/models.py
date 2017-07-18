@@ -25,7 +25,7 @@ class Account(models.Model):
     owner = models.ForeignKey(auth_models.User, db_column='user_id', default=1)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['id']
 
 
 
