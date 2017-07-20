@@ -6,9 +6,6 @@ from django.contrib.auth import models as auth_models
 class AccountType(models.Model):
     type = models.CharField(max_length=50, unique=True)
 
-    def natural_key(self):
-        return [self.type]
-
     class Meta:
         ordering = ['type']
 
@@ -25,7 +22,7 @@ class Account(models.Model):
     owner = models.ForeignKey(auth_models.User, db_column='user_id', default=1)
 
     class Meta:
-        ordering = ['id']
+        ordering = ['-created_at']
 
 
 

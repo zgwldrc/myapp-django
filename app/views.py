@@ -24,6 +24,9 @@ class AccountView(View):
         for dso in deserialize('json', request.body.decode(), ignorenonexistent=True):
             dso.object.id = None  # 让数据库决定id字段的值
             dso.save()
+        response.write(json.dumps({
+            'id': dso.object.id
+        }))
         return response
 
     @staticmethod
