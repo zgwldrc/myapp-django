@@ -4,7 +4,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.serializers import serialize, deserialize
 import json
 from app.models import Account, AccountType
-
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 
 def json_error(msg):
     return json.dumps({
@@ -130,6 +131,51 @@ class AccountView(View):
             AccountView.query_set_json(AccountType.objects.all()),
             content_type='application/json'
         )
+
+
+class UserView(View):
+    def post(self, request, pk):
+        response = HttpResponse(content_type='application/json')
+        for dso in deserialize('json', request.body.decode(), ignorenonexistent=True):
+            dso.object.id = None  # 让数据库决定id字段的值
+            dso.object.set_password(dso.object.password)
+            dso.save()
+        response.write(json.dumps({
+            'id': dso.object.id
+        }))
+        return response
+
+    def delete(self, request, pk):
+        response = HttpResponse(content_type='application/json')
+        pk = int(pk)
+        User.objects.filter(pk=pk).delete()
+        return response
+
+
+def login(request):
+
+    response = HttpResponse(content_type='application/json')
+    user_dict = json.loads(request.body.decode())
+
+    user = authenticate(username=user_dict.get('username'), password=user_dict.get('password'))
+    if user:
+        login(request, user)
+    else:
+        response.status_code = 403
+        response.write(json_error('User name or password is invalid!'))
+
+    return response
+
+
+def logout(request):
+    response = HttpResponse(content_type='application/json')
+    logout(request)
+    return response
+
+
+
+
+
 
 
 
