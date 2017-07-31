@@ -1,46 +1,73 @@
 from django.test import TestCase
 
 # Create your tests here.
-from urllib.request import urlopen, Request
+import http.cookiejar, urllib.request
 import json
 
+
 class UserTest(TestCase):
-    api = 'http://localhost:8000/api/user/'
+    user_api = 'http://localhost:8000/api/user/'
+    login_api = 'http://localhost:8000/api/login/'
+    logout_api = 'http://localhost:8000/api/logout/'
+    account_api = 'http://localhost:8000/api/account/'
 
-    def test_create_delete_user(self):
+    def test_001(self):
 
-        d = [
-              {
-                "model": "auth.user",
-                "fields": {
-                  "username": "john123",
-                  "password": "123456"
-                }
-              }
-            ]
+        cj = http.cookiejar.CookieJar()
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+        urllib.request.install_opener(opener)
 
-        with urlopen(self.api, json.dumps(d).encode()) as resp:
+        req_map = {}
+
+        data = json.dumps([{"model": "auth.user", "fields": {"username": "john123", "password": "123456"}}]).encode()
+        req_map['create_user'] = urllib.request.Request(self.user_api, data)
+
+        # 创建用户
+        with urllib.request.urlopen(req_map['create_user']) as resp:
+            print('----Create New User----')
+            print(resp.geturl())
             print(resp.getcode(), resp.msg)
-            data = resp.read().decode()
-            print(data)
-            pk = json.loads(data)['id']
-            del_req = Request(self.api+str(pk), method='DELETE')
-            with urlopen(del_req) as resp2:
-                print(resp2.getcode(), resp2.msg)
+            print(resp.info())
+            body = resp.read()
+            print(body.decode())
+            print('----Create User Ended----')
+            pk = json.loads(body.decode()).get('id')
+            req_map['del'] = urllib.request.Request(self.user_api+str(pk), method='DELETE')
 
-    def test_login_logout(self):
-        login_api = 'http://localhost:8000/api/login'
-        logout_api = 'http://localhost:8000/api/logout'
-        login_req = Request(
-            login_api,
-            json.dumps({
-                'username': 'xiayu',
-                'password': 'xiayu123'
-            }).encode(),
-            method='POST'
-        )
+        # 登陆
+        data = json.dumps({'username': 'john123', 'password': '123456'}).encode()
+        req_map['login'] = urllib.request.Request(self.login_api, data)
+        with urllib.request.urlopen(req_map['login']) as resp:
+            print('----Login Test----')
+            print(resp.geturl())
+            print(resp.getcode(), resp.msg)
+            print(resp.info())
+            print('----Login Test Ended----')
 
+        # 访问 account 列表
+        with urllib.request.urlopen(self.account_api) as r:
+            print('----Get AccountList Test----')
+            print(r.geturl())
+            print(r.getcode(), r.msg)
+            print(r.info())
+            print('----Get AccountList Test Ended----')
 
+        # 登出
+        req_map['logout'] = urllib.request.Request(self.logout_api)
+        with urllib.request.urlopen(req_map['logout']) as resp:
+            print('----Logout Test----')
+            print(resp.geturl())
+            print(resp.getcode(), resp.msg)
+            print(resp.info())
+            print('----Logout Test Ended----')
+
+        # 删除新建用户
+        with urllib.request.urlopen(req_map['del']) as resp:
+            print('----Del User Test----')
+            print(resp.geturl())
+            print(resp.getcode(), resp.msg)
+            print(resp.info())
+            print('----Del User Test Ended----')
 
 
 

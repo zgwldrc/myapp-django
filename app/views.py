@@ -5,7 +5,9 @@ from django.core.serializers import serialize, deserialize
 import json
 from app.models import Account, AccountType
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth.mixins import LoginRequiredMixin
+import django.contrib.auth
+
 
 def json_error(msg):
     return json.dumps({
@@ -13,7 +15,11 @@ def json_error(msg):
     })
 
 
-class AccountView(View):
+class AccountView(LoginRequiredMixin, View):
+    def handle_no_permission(self):
+        response = HttpResponse(content_type='application/json')
+        response.status_code = 403
+        return response
 
     @staticmethod
     def query_set_json(data):
@@ -157,9 +163,9 @@ def login(request):
     response = HttpResponse(content_type='application/json')
     user_dict = json.loads(request.body.decode())
 
-    user = authenticate(username=user_dict.get('username'), password=user_dict.get('password'))
+    user = django.contrib.auth.authenticate(username=user_dict.get('username'), password=user_dict.get('password'))
     if user:
-        login(request, user)
+        django.contrib.auth.login(request, user)
     else:
         response.status_code = 403
         response.write(json_error('User name or password is invalid!'))
@@ -169,12 +175,8 @@ def login(request):
 
 def logout(request):
     response = HttpResponse(content_type='application/json')
-    logout(request)
+    django.contrib.auth.logout(request)
     return response
-
-
-
-
 
 
 

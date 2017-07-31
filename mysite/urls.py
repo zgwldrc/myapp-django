@@ -23,4 +23,6 @@ urlpatterns = [
     url(r'^api/account/count/?$', views.AccountView.account_count),
     url(r'^api/account/typelist/?$', views.AccountView.account_type_list),
     url(r'^api/user/(?:(?P<pk>\d+)/?)?$', views.UserView.as_view()),
+    url(r'^api/login/?$', views.login),
+    url(r'^api/logout/?$', views.logout)
 ]
