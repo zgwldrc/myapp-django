@@ -13,7 +13,8 @@ class CorsMiddleware(object):
             response = HttpResponse()
             response['Access-Control-Allow-Origin'] = 'http://localhost:4200'
             response['Access-Control-Allow-Methods'] = 'PUT,POST,DELETE'
-            response['Access-Control-Allow-Headers'] = 'Content-Type'
+            response['Access-Control-Allow-Headers'] = 'Content-Type,*'
+            response['Access-Control-Allow-Credentials'] = 'true'
 
             response['Access-Control-Max-Age'] = 86400
             return response
@@ -23,7 +24,10 @@ class CorsMiddleware(object):
         # Code to be executed for each request/response after
         # the view is called.
         response['Access-Control-Allow-Origin'] = 'http://localhost:4200'
+        response['Access-Control-Allow-Methods'] = 'PUT,POST,DELETE'
+        response['Access-Control-Allow-Headers'] = 'Content-Type,*'
         response['Access-Control-Allow-Credentials'] = 'true'
+        response['Access-Control-Max-Age'] = 86400
 
         return response
 

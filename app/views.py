@@ -18,7 +18,7 @@ def json_error(msg):
 class AccountView(LoginRequiredMixin, View):
     def handle_no_permission(self):
         response = HttpResponse(content_type='application/json')
-        response.status_code = 403
+        response.status_code = 401
         return response
 
     @staticmethod
@@ -38,18 +38,18 @@ class AccountView(LoginRequiredMixin, View):
 
     @staticmethod
     def get(request, pk):
+        response = HttpResponse(content_type='application/json')
+        qs = Account.objects.all().filter(owner=request.user)
         # 获取详情
         if pk is not None:
-            response = HttpResponse(content_type='application/json')
             response.write(
-                AccountView.query_set_json(Account.objects.filter(pk=int(pk)))
+                AccountView.query_set_json(qs.filter(pk=int(pk)))
             )
         # 获取列表
         else:
-            qs = Account.objects.all()
             # 设置过滤条件
             if request.GET.get('type'):
-                qs = Account.objects.filter(type=int(request.GET.get('type')))
+                qs = qs.filter(type=int(request.GET.get('type')))
             if request.GET.get('login_to'):
                 qs = qs.filter(login_url__contains=request.GET.get('login_to'))
             if request.GET.get('search_term'):
@@ -85,7 +85,6 @@ class AccountView(LoginRequiredMixin, View):
                 # If page is out of range (e.g. 9999), deliver last page of
                 accounts = paginator.page(paginator.num_pages)
 
-            response = HttpResponse(content_type='application/json')
             response.write(AccountView.query_set_json(accounts))
 
         return response
@@ -93,7 +92,7 @@ class AccountView(LoginRequiredMixin, View):
     @staticmethod
     def delete(request, pk):
         response = HttpResponse(content_type='application/json')
-        qs = Account.objects.filter(pk=pk)
+        qs = Account.objects.all().filter(owner=request.user).filter(pk=pk)
         if qs:
             qs.delete()
         else:
@@ -106,13 +105,12 @@ class AccountView(LoginRequiredMixin, View):
     @staticmethod
     def put(request, pk):
         response = HttpResponse(content_type='application/json')
-
         if pk is None:
             response.status_code == 400
             response.write(json_error('need to specify an id in the url'))
             return response
 
-        qs = Account.objects.filter(pk=pk)
+        qs = Account.objects.all().filter(owner=request.user).filter(pk=pk)
         if qs:  # 请求的对象存在时
             for dso in deserialize('json', request.body.decode(), ignorenonexistent=True):
                 if dso.object.id == int(pk):
@@ -128,7 +126,7 @@ class AccountView(LoginRequiredMixin, View):
 
     @staticmethod
     def account_count(request):
-        count = Account.objects.count()
+        count = Account.objects.all().filter(owner=request.user).count()
         return HttpResponse(json.dumps({'count': count}).encode(), content_type='application/json')
 
     @staticmethod
