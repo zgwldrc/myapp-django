@@ -1,0 +1,6 @@
+version: "2"
+services:
+  myapp:
+    build: ./
+    network_mode: host
+    command: ["gunicorn","--config", "file:gunicorn.conf.py" "--bind=0.0.0.0:5001", "mysite.wsgi:application"]
