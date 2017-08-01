@@ -26,7 +26,7 @@ SECRET_KEY = 'jmoxye4574mqsj8c=+rx7uruz%$3vfk)qf58x@gab@o%!#35kc'
 DEBUG = False if os.environ.get('ENV_PROD', None) else True
 
 APPEND_SLASH = False
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.1.234', 'localhost']
 
 
 # Application definition
@@ -125,3 +125,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = 'static'
