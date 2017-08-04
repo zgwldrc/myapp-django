@@ -138,6 +138,22 @@ class AccountView(LoginRequiredMixin, View):
 
 
 class UserView(View):
+    # only used for check user existence
+    def get(self, request, pk=None):
+        response = HttpResponse(content_type='application/json')
+
+        if pk:
+           response.write(
+               serialize('json', User.objects.filter(pk=pk))
+           )
+        elif request.GET.get('username') and request.GET.get('username') != '':
+            response.write(
+                serialize('json', User.objects.filter(username=request.GET.get('username')))
+            )
+        else:
+            response.status_code = 404
+        return response
+
     def post(self, request, pk):
         response = HttpResponse(content_type='application/json')
         for dso in deserialize('json', request.body.decode(), ignorenonexistent=True):
@@ -159,9 +175,9 @@ class UserView(View):
 def login(request):
 
     response = HttpResponse(content_type='application/json')
-    user_dict = json.loads(request.body.decode())
+    post_user = next(deserialize('json', request.body.decode())).object
 
-    user = django.contrib.auth.authenticate(username=user_dict.get('username'), password=user_dict.get('password'))
+    user = django.contrib.auth.authenticate(username=post_user.username, password=post_user.password)
     if user:
         django.contrib.auth.login(request, user)
     else:
