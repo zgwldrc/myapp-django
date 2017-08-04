@@ -147,9 +147,15 @@ class UserView(View):
                serialize('json', User.objects.filter(pk=pk))
            )
         elif request.GET.get('username') and request.GET.get('username') != '':
-            response.write(
-                serialize('json', User.objects.filter(username=request.GET.get('username')))
-            )
+            print(request.GET.get('username'))
+            qs = User.objects.filter(username=request.GET.get('username'))
+            if len(qs) == 0:
+                response.status_code = 404;
+            else:
+
+                data = serialize('json', qs)
+                print(data)
+                response.write(data)
         else:
             response.status_code = 404
         return response
