@@ -30,7 +30,9 @@ class AccountView(LoginRequiredMixin, View):
         response = HttpResponse(content_type='application/json')
         for dso in deserialize('json', request.body.decode(), ignorenonexistent=True):
             dso.object.id = None  # 让数据库决定id字段的值
+            dso.object.owner = request.user
             dso.save()
+            print('userid:', dso.object.owner.id)
         response.write(json.dumps({
             'id': dso.object.id
         }))
@@ -186,6 +188,7 @@ def login(request):
     user = django.contrib.auth.authenticate(username=post_user.username, password=post_user.password)
     if user:
         django.contrib.auth.login(request, user)
+        response.write(serialize('json', [user]))
     else:
         response.status_code = 403
         response.write(json_error('User name or password is invalid!'))
