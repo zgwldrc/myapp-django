@@ -2,7 +2,6 @@ from django.test import TestCase
 
 # Create your tests here.
 import http.cookiejar, urllib.request
-import json
 
 
 class UserTest(TestCase):
@@ -12,62 +11,53 @@ class UserTest(TestCase):
     account_api = 'http://localhost:8000/api/account/'
 
     def test_001(self):
+        session_api = 'http://localhost:8000/api/session/'
+        data = '{"username": "zgwldrc@163.com", "password": "xiayu123"}'
 
-        cj = http.cookiejar.CookieJar()
-        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
-        urllib.request.install_opener(opener)
+        http = Http()
+        http.post(session_api, data.encode())
+        http.delete(session_api)
 
-        req_map = {}
+    def test_002(self):
+        session_api = 'http://localhost:8000/api/session/'
+        data = '{"username": "zgwldrc@163.com", "password": "xiayu1234"}'
 
-        data = json.dumps([{"model": "auth.user", "fields": {"username": "john123", "password": "123456"}}]).encode()
-        req_map['create_user'] = urllib.request.Request(self.user_api, data)
+        http = Http()
+        try:
 
-        # 创建用户
-        with urllib.request.urlopen(req_map['create_user']) as resp:
-            print('----Create New User----')
-            print(resp.geturl())
-            print(resp.getcode(), resp.msg)
-            print(resp.info())
-            body = resp.read()
-            print(body.decode())
-            print('----Create User Ended----')
-            pk = json.loads(body.decode()).get('id')
-            req_map['del'] = urllib.request.Request(self.user_api+str(pk), method='DELETE')
+            http.post(session_api, data.encode())
+        except HTTPError:
 
-        # 登陆
-        data = json.dumps({'username': 'john123', 'password': '123456'}).encode()
-        req_map['login'] = urllib.request.Request(self.login_api, data)
-        with urllib.request.urlopen(req_map['login']) as resp:
-            print('----Login Test----')
-            print(resp.geturl())
-            print(resp.getcode(), resp.msg)
-            print(resp.info())
-            print('----Login Test Ended----')
 
-        # 访问 account 列表
-        with urllib.request.urlopen(self.account_api) as r:
-            print('----Get AccountList Test----')
-            print(r.geturl())
-            print(r.getcode(), r.msg)
+
+class Http:
+    def __init__(self, cookiejar=True):
+        handlers = []
+        if cookiejar:
+            cookiejar = http.cookiejar.CookieJar()
+            cookieprocessor = urllib.request.HTTPCookieProcessor(cookiejar)
+            handlers.append(cookieprocessor)
+        self.opener = urllib.request.build_opener(*handlers)
+        urllib.request.install_opener(self.opener)
+
+    def open(self, request):
+        with urllib.request.urlopen(request) as r:
+            print('请求方法: {},请求URL: {}'.format(request.get_method(), r.geturl()))
+            print('响应状态码: {}, 消息: {}'.format(r.getcode(), r.msg))
             print(r.info())
-            print('----Get AccountList Test Ended----')
+            print(r.read().decode())
 
-        # 登出
-        req_map['logout'] = urllib.request.Request(self.logout_api)
-        with urllib.request.urlopen(req_map['logout']) as resp:
-            print('----Logout Test----')
-            print(resp.geturl())
-            print(resp.getcode(), resp.msg)
-            print(resp.info())
-            print('----Logout Test Ended----')
+    def post(self, url, data, options={}):
+        req = urllib.request.Request(url, data)
+        self.open(req)
 
-        # 删除新建用户
-        with urllib.request.urlopen(req_map['del']) as resp:
-            print('----Del User Test----')
-            print(resp.geturl())
-            print(resp.getcode(), resp.msg)
-            print(resp.info())
-            print('----Del User Test Ended----')
+    def delete(self, url, options={}):
+        req = urllib.request.Request(url, method='DELETE')
+        self.open(req)
+
+
+
+
 
 
 

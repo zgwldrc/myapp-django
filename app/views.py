@@ -10,9 +10,7 @@ import django.contrib.auth
 
 
 def json_error(msg):
-    return json.dumps({
-        'errmsg': msg
-    })
+    return json.dumps({'errmsg': msg}, indent=2)
 
 
 class AccountView(LoginRequiredMixin, View):
@@ -145,19 +143,11 @@ class UserView(View):
         response = HttpResponse(content_type='application/json')
 
         if pk:
-           response.write(
-               serialize('json', User.objects.filter(pk=pk))
-           )
+            if not User.objects.filter(pk=pk):
+                response.status_code = 404
         elif request.GET.get('username') and request.GET.get('username') != '':
-            print(request.GET.get('username'))
-            qs = User.objects.filter(username=request.GET.get('username'))
-            if len(qs) == 0:
-                response.status_code = 404;
-            else:
-
-                data = serialize('json', qs)
-                print(data)
-                response.write(data)
+            if not User.objects.filter(username=request.GET.get('username')):
+                response.status_code = 404
         else:
             response.status_code = 404
         return response
@@ -173,11 +163,24 @@ class UserView(View):
         }))
         return response
 
-    def delete(self, request, pk):
-        response = HttpResponse(content_type='application/json')
-        pk = int(pk)
-        User.objects.filter(pk=pk).delete()
-        return response
+
+class SessionView(View):
+    response = HttpResponse(content_type='application/json')
+
+    def post(self, request):
+        credential = json.loads(request.body.decode())
+        user = django.contrib.auth.authenticate(**credential)
+        if user:
+            django.contrib.auth.login(request, user)
+
+        else:
+            self.response.status_code = 403
+            self.response.write(json_error('User name or password is invalid!'))
+        return self.response
+
+    def delete(self, request):
+        django.contrib.auth.logout(request)
+        return self.response
 
 
 def login(request):
@@ -200,6 +203,7 @@ def logout(request):
     response = HttpResponse(content_type='application/json')
     django.contrib.auth.logout(request)
     return response
+
 
 
 
