@@ -172,7 +172,7 @@ class SessionView(View):
         user = django.contrib.auth.authenticate(**credential)
         if user:
             django.contrib.auth.login(request, user)
-
+            self.response.write(serialize('json', [user], fields='username'))
         else:
             self.response.status_code = 403
             self.response.write(json_error('User name or password is invalid!'))

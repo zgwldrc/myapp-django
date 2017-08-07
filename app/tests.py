@@ -9,25 +9,25 @@ class UserTest(TestCase):
     login_api = 'http://localhost:8000/api/login/'
     logout_api = 'http://localhost:8000/api/logout/'
     account_api = 'http://localhost:8000/api/account/'
+    session_api = 'http://localhost:8000/api/session/'
 
     def test_001(self):
-        session_api = 'http://localhost:8000/api/session/'
-        data = '{"username": "zgwldrc@163.com", "password": "xiayu123"}'
+
+        credential = '{"username": "zgwldrc@163.com", "password": "xiayu123"}'.encode()
 
         http = Http()
-        http.post(session_api, data.encode())
-        http.delete(session_api)
+        http.post(self.session_api, credential)
+        http.delete(self.session_api)
 
-    def test_002(self):
-        session_api = 'http://localhost:8000/api/session/'
-        data = '{"username": "zgwldrc@163.com", "password": "xiayu1234"}'
-
-        http = Http()
-        try:
-
-            http.post(session_api, data.encode())
-        except HTTPError:
-
+    # def test_002(self):
+    #     session_api = 'http://localhost:8000/api/session/'
+    #     data = '{"username": "zgwldrc@163.com", "password": "xiayu1234"}'
+    #
+    #     http = Http()
+    #     try:
+    #
+    #         http.post(session_api, data.encode())
+    #     except HTTPError:
 
 
 class Http:
