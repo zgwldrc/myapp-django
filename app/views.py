@@ -126,8 +126,15 @@ class AccountView(LoginRequiredMixin, View):
 
     @staticmethod
     def account_count(request):
-        count = Account.objects.all().filter(owner=request.user).count()
-        return HttpResponse(json.dumps({'count': count}).encode(), content_type='application/json')
+        qs = Account.objects.all().filter(owner=request.user)
+        if request.GET.get('type'):
+            qs = qs.filter(type=int(request.GET.get('type')))
+        if request.GET.get('login_to'):
+            qs = qs.filter(login_url__contains=request.GET.get('login_to'))
+        if request.GET.get('search_term'):
+            qs = qs.filter(desc__contains=request.GET.get('search_term'))
+
+        return HttpResponse(json.dumps({'count': qs.count()}).encode(), content_type='application/json')
 
     @staticmethod
     def account_type_list(request):
