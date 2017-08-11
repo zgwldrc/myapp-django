@@ -3,7 +3,13 @@ services:
   myapp:
     build: ./
     network_mode: host
+    container_name: leopard.1
     extra_hosts:
       - "mysql:192.168.1.234"
     environment:
       ENV_PROD: 'true'
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "udp://192.168.1.234:514"
+        tag: "{{.Name}}"
